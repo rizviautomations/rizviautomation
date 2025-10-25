@@ -1,64 +1,14 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Check, X } from "lucide-react";
+import { Phone, X } from "lucide-react";
 
 export default function AIDemoModal({ showModal, setShowModal }) {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [phoneNumber, setPhoneNumber] = useState("");
-  const [demoType, setDemoType] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [successMessage, setSuccessMessage] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("");
 
-  const demoOptions = ["Law Firms", "Real Estate", "Dentists"];
-
-  const formatPhoneNumber = (input) => {
-    let digits = input.replace(/\D/g, "");
-    digits = digits.slice(0, 10);
-    return `+1${digits}`;
-  };
-
-  const handleDemoSubmit = async (e) => {
-    e.preventDefault();
-    if (!name || !email || !phoneNumber || !demoType || loading) return;
-
-    const formattedNumber = formatPhoneNumber(phoneNumber);
-    if (!/^\+1\d{10}$/.test(formattedNumber)) {
-      alert("Please enter a valid 10-digit US phone number.");
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const response = await fetch("/api/test-vapi", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone: formattedNumber, name, email, demoType }),
-      });
-      await response.json();
-
-      // Professional B2B success message
-      setSuccessMessage(
-        "✅ Thank you! Your demo request has been received. Our AI receptionist will reach out within 30 seconds to showcase how this can benefit your business."
-      );
-
-      // Clear form
-      setName("");
-      setEmail("");
-      setPhoneNumber("");
-      setDemoType("");
-
-      // Auto-close modal after success message
-      setTimeout(() => {
-        setSuccessMessage("");
-        setShowModal(false);
-      }, 4500);
-    } catch (error) {
-      console.error("Error submitting demo request:", error);
-      alert("Something went wrong. Please try again.");
-    } finally {
-      setLoading(false);
-    }
+  const demoCategories = {
+    Gym: { name: "FitLife Gym", number: "+1 (555) 123-4567" },
+    Dentist: { name: "SmileCare Dental", number: "+1 (555) 456-7890" },
+    Barber: { name: "Classic Cuts Barbershop", number: "+1 (555) 789-0123" }
   };
 
   return (
@@ -94,109 +44,75 @@ export default function AIDemoModal({ showModal, setShowModal }) {
                 </span>
               </h3>
               <p className="text-white/80 text-sm sm:text-base">
-                Enter your details and our AI receptionist will call you back in
-                10–30 seconds.
+                You can call these numbers to check demo
               </p>
             </div>
 
-            {/* Form */}
-            <form onSubmit={handleDemoSubmit} className="space-y-4">
-              {/* Demo Type */}
+            {/* Demo Categories */}
+            <div className="space-y-6">
+              {/* Category Selection */}
               <div>
-                <label className="block text-white/80 mb-2 text-sm">
-                  Choose Demo
+                <label className="block text-white/80 mb-3 text-sm font-medium">
+                  Choose Category
                 </label>
-                <div className="flex gap-3 flex-wrap">
-                  {demoOptions.map((option) => (
+                <div className="flex gap-2 flex-wrap">
+                  {Object.keys(demoCategories).map((category) => (
                     <button
                       type="button"
-                      key={option}
-                      onClick={() => setDemoType(option)}
+                      key={category}
+                      onClick={() => setSelectedCategory(category)}
                       className={`px-4 py-2 rounded-full border text-sm font-medium transition-all ${
-                        demoType === option
+                        selectedCategory === category
                           ? "bg-[#00FFFF] text-black border-[#00FFFF]"
-                          : "bg-[#2a2a2a] text-white/80 border-[#00FFFF]/30"
+                          : "bg-[#2a2a2a] text-white/80 border-[#00FFFF]/30 hover:border-[#00FFFF]/50"
                       }`}
                     >
-                      {option}
+                      {category}
                     </button>
                   ))}
                 </div>
               </div>
 
-              {/* Name */}
-              <input
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Full Name"
-                className="w-full px-4 py-3 bg-[#2a2a2a] border-2 border-[#00FFFF]/30 rounded-lg text-white focus:border-[#00FFFF] focus:outline-none transition-colors text-sm sm:text-base"
-                required
-              />
-
-              {/* Email */}
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="Business Email"
-                className="w-full px-4 py-3 bg-[#2a2a2a] border-2 border-[#00FFFF]/30 rounded-lg text-white focus:border-[#00FFFF] focus:outline-none transition-colors text-sm sm:text-base"
-                required
-              />
-
-              {/* Phone Number */}
-              <div className="flex items-center">
-                <span className="px-3 py-3 bg-[#2a2a2a] border-2 border-r-0 border-[#00FFFF]/30 rounded-l-lg text-white text-sm sm:text-base">
-                  +1
-                </span>
-                <input
-                  type="tel"
-                  value={phoneNumber}
-                  onChange={(e) =>
-                    setPhoneNumber(e.target.value.replace(/\D/g, ""))
-                  }
-                  placeholder="Phone Number"
-                  className="flex-1 px-4 py-3 bg-[#2a2a2a] border-2 border-l-0 border-[#00FFFF]/30 rounded-r-lg text-white focus:border-[#00FFFF] focus:outline-none transition-colors text-sm sm:text-base"
-                  required
-                />
-              </div>
-
-              {/* Submit Button */}
-              <motion.button
-                type="submit"
-                disabled={!name || !email || !phoneNumber || !demoType || loading}
-                className="w-full py-3 bg-gradient-to-r from-[#00FFFF] to-[#00FF99] text-black font-bold rounded-lg text-sm sm:text-base"
-                whileHover={{
-                  scale: 1.02,
-                  boxShadow: "0 0 30px rgba(0, 255, 255, 0.5)",
-                }}
-                whileTap={{ scale: 0.98 }}
-              >
-                {loading ? (
-                  "Submitting..."
-                ) : (
-                  <span className="flex items-center justify-center">
-                    <Check className="w-4 h-4 mr-2" />
-                    Submit
-                  </span>
-                )}
-              </motion.button>
-            </form>
-
-            {/* Success Toast */}
-            <AnimatePresence>
-              {successMessage && (
+              {/* Phone Number Display */}
+              {selectedCategory && (
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 20 }}
-                  transition={{ duration: 0.4 }}
-                  className="absolute top-4 left-1/2 -translate-x-1/2 bg-[#00FF99]/20 text-white px-6 py-3 rounded-lg font-medium shadow-lg backdrop-blur-md text-sm sm:text-base"
+                  transition={{ duration: 0.3 }}
+                  className="space-y-3"
                 >
-                  {successMessage}
+                  <h4 className="text-white font-semibold text-lg mb-4">
+                    {selectedCategory} Demo Number
+                  </h4>
+                  <motion.div
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.3 }}
+                    className="bg-[#2a2a2a] border border-[#00FFFF]/30 rounded-lg p-4 hover:border-[#00FFFF]/50 transition-colors"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h5 className="text-white font-medium text-sm">
+                          {demoCategories[selectedCategory].name}
+                        </h5>
+                        <p className="text-[#00FFFF] font-mono text-sm">
+                          {demoCategories[selectedCategory].number}
+                        </p>
+                      </div>
+                      <motion.a
+                        href={`tel:${demoCategories[selectedCategory].number.replace(/\D/g, '')}`}
+                        className="bg-[#00FFFF] text-black p-2 rounded-full hover:bg-[#00FF99] transition-colors"
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                      >
+                        <Phone size={16} />
+                      </motion.a>
+                    </div>
+                  </motion.div>
                 </motion.div>
               )}
-            </AnimatePresence>
+            </div>
+
 
             {/* Close Button */}
             <motion.button
